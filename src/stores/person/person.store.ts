@@ -1,7 +1,8 @@
 import { create, type StateCreator } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 // import { customSessionStorage } from '../storages/session.storage';
 import { firebaseStorage } from '../storages/firebase.storage';
+import { logger } from '../middlewares/logger.middelwares';
 
 
 interface PersonState {
@@ -14,15 +15,15 @@ interface ActionPerson {
     setLastName: (value: string) => void;
 }
 
-const sotoreAPI: StateCreator<PersonState & ActionPerson> = (set) => ({
+const sotoreAPI: StateCreator<PersonState & ActionPerson, [["zustand/devtools", never]]> = (set) => ({
     firstName: '',
     lastName: '',
-    setFirsName: (value: string) => set({ firstName: value }),
-    setLastName: (value: string) => set({ lastName: value })
+    setFirsName: (value: string) => set({ firstName: value }, false, 'setFirsName'),
+    setLastName: (value: string) => set({ lastName: value }, false, 'setLastName')
 })
 
 
 
 export const usePersonStore = create<PersonState & ActionPerson>()(
-    persist(sotoreAPI, { name: 'person-storage', storage: firebaseStorage })
+    logger(devtools(persist(sotoreAPI, { name: 'person-storage', storage: firebaseStorage })))
 );
